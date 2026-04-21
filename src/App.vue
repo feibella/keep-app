@@ -9,4 +9,15 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { onMounted } from 'vue'
+import { loadSettings } from './utils/settings'
+
+// 预热 AList，避免 Railway 休眠后首次访问延迟
+onMounted(() => {
+  const s = loadSettings()
+  if (!s.alistUrl) return
+  const base = s.alistUrl.replace(/\/$/, '')
+  fetch(`${base}/ping`, { method: 'GET', mode: 'no-cors' }).catch(() => {})
+})
+</script>

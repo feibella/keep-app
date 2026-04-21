@@ -8,6 +8,11 @@
     <!-- MODE 1: AList 直播流，app 内播放 -->
     <template v-if="streamUrl">
       <div class="video-area">
+        <div v-if="videoLoading" class="video-loading">
+          <div class="loading-spinner"></div>
+          <p>视频加载中…</p>
+          <p class="loading-hint">首次打开可能较慢，请稍候</p>
+        </div>
         <video
           ref="videoEl"
           class="video-el"
@@ -15,6 +20,10 @@
           controls
           autoplay
           playsinline
+          @loadstart="videoLoading = true"
+          @canplay="videoLoading = false"
+          @playing="videoLoading = false"
+          @error="onVideoError"
           @play="onVideoPlay"
           @ended="onEnded"
         />
@@ -75,12 +84,13 @@ import { loadSettings, getStreamUrl } from '../utils/settings'
 const props = defineProps({ course: Object })
 const emit  = defineEmits(['close'])
 
-const store     = useTrainingStore()
-const settings  = loadSettings()
-const videoEl   = ref(null)
-const elapsed   = ref(0)
-const started   = ref(false)
-const showModal = ref(false)
+const store        = useTrainingStore()
+const settings     = loadSettings()
+const videoEl      = ref(null)
+const elapsed      = ref(0)
+const started      = ref(false)
+const showModal    = ref(false)
+const videoLoading = ref(false)
 let   startTime = null
 let   timer     = null
 
@@ -96,6 +106,10 @@ function beginTimer() {
 }
 
 function onVideoPlay() { beginTimer() }
+function onVideoError() {
+  videoLoading.value = false
+  alert('视频加载失败，请检查 AList 配置或稍后重试')
+}
 
 function openBaidu() {
   beginTimer()
